@@ -1,0 +1,6 @@
+# Byte-compiled / optimized / DLL files
+.settings
+CMSIS
+Debug
+Release
+StdPeripheralDriver
