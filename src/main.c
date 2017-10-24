@@ -189,9 +189,9 @@ void main(void)
   // SAMAPP_API_Screen(phost, "START START START"); // 1  появляется фон и текст +
 
   // SAMAPP_Russian(phost);
-
-   ft_uint16_t dloffset = API_Screen_BackGround(phost, "BACKGROUND лол кек"); // 2 появляется фон, текст background и число 777 и текст content
-  // API_Screen_Content(phost, dloffset, init_finished); // 2 ШРИФТ!!!
+//SAMAPP_API_Screen_BackGround
+   ft_uint16_t dloffset = API_Screen_MainScreen(phost); // 2 появляется фон, текст background и число 777 и текст content
+  // SAMAPP_API_Screen_Content(phost, dloffset, init_finished); // 2 ШРИФТ!!!
 
   // Info(); // 3 ничего не появляется - цикл do while
 
@@ -206,31 +206,35 @@ void main(void)
   while(1)
   {
     //DelayUS(100);
+	  int tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
+	  	//  clear the GRAM when user enter the Clear button
+	  	if(tag == 1)
+	  	{
+	  		flag = 1;
+	  	}
+	  	if(tag == 2)
+	  	{
+	  		flag = 0;
+	  	}
 
 	  LEDsSet(0x2);
+	  SAMAPP_API_Screen_Content(phost, dloffset, init_finished);
+	  Ft_Gpu_Hal_Sleep(5);
+
+
+//	  LEDsSet(0x3);
+//	  if (flag != 0)
+//		  init_finished++;
+//	  SAMAPP_API_Screen_Content(phost, dloffset, init_finished);
+//	  Ft_Gpu_Hal_Sleep(5);
+
+
+	  while (tag != 0){
+		  tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
+	  }
+
 	  if (flag != 0)
 	  	  init_finished++;
-	  API_Screen_Content(phost, dloffset, init_finished);
-	  Ft_Gpu_Hal_Sleep(5);
-
-
-	  LEDsSet(0x3);
-	  if (flag != 0)
-		  init_finished++;
-	  API_Screen_Content(phost, dloffset, init_finished);
-	  Ft_Gpu_Hal_Sleep(5);
-
-	int tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
-	//  clear the GRAM when user enter the Clear button
-	if(tag == 1)
-	{
-		flag = 1;
-	}
-	if(tag == 2)
-	{
-		flag = 0;
-	}
-
     //SAMAPP_API_Screen(phost, "START START START");
 
     /* if any data received from PC */
