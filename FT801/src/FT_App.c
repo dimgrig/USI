@@ -5,10 +5,7 @@
  *      Author: Dima
  */
 
-#include "FT_Platform.h"
 #include "FT_App.h"
-#include "arial.TTF_18_L1.rawh"
-#include "GUI.h"
 
 extern FT_PROGMEM ft_prog_uchar8_t SAMApp_Metric_L1[];
 extern FT_PROGMEM ft_prog_uchar8_t SAMApp_L1[];
@@ -354,13 +351,11 @@ ft_uint16_t SAMAPP_API_Screen_BackGround(Ft_Gpu_Hal_Context_t *phost, ft_char8_t
 
 }
 
-ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost, Screen_TypeDef SCREEN, ft_uint16_t dloffset, ft_uint16_t nmb)
+ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost, Screen_TypeDef SCREEN, ft_uint16_t tag, ft_uint16_t dloffset, ft_uint16_t nmb)
 {
-
+	ft_uint32_t storedMaterial;
 	Ft_Gpu_CoCmd_Dlstart(phost); // íà÷àëî íîâîãî äèñïëåé-ëèñòà
 	Ft_Gpu_CoCmd_Append(phost,100000L, dloffset); // äîáàâëåíèå ê òåêóùåìó íàáîğó êîìàíä, êîìàíä ñêîïèğîâàííûõ MEMCPY
-
-	ft_uint32_t tag = 0;
 
 	switch (SCREEN){
 		case MAIN:
@@ -372,37 +367,95 @@ ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost, Screen_TypeDef 
 			Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0xd8,0x00));
 			Ft_Gpu_CoCmd_Number(phost, 10, 60, 16, 0, nmb);
 
-			tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
-
 			Ft_App_WrCoCmd_Buffer(phost,TAG(1));          // assign the tag value
 			Ft_Gpu_CoCmd_FgColor(phost,(tag==1)?button_color_hover:button_color);
 			Ft_Gpu_CoCmd_Button(phost, 5, 190, 100, 40, 12, 0, "\x1d\x02\x26\x28\x24\x20\x16\x18\x14");
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
-
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
 			Ft_App_WrCoCmd_Buffer(phost,TAG(2));          // assign the tag value
 			Ft_Gpu_CoCmd_FgColor(phost,(tag==2)?button_color_hover:button_color);
 			Ft_Gpu_CoCmd_Button(phost, 110, 190, 100, 40, 12, 0, "\x21\x2a\x26\x18");
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
-
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
 			Ft_App_WrCoCmd_Buffer(phost,TAG(3));          // assign the tag value
 			Ft_Gpu_CoCmd_FgColor(phost,(tag==3)?button_color_hover:button_color);
 			Ft_Gpu_CoCmd_Button(phost, 215, 190, 100, 40, 12, 0, "\x25\x04\x24\x20\x26");
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
 		break;
 		case SETTINGS:
-			SCREEN = MAIN;
-
 			tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
 
 			Ft_App_WrCoCmd_Buffer(phost,TAG(1));          // assign the tag value
 			Ft_Gpu_CoCmd_FgColor(phost,(tag==1)?button_color_hover:button_color);
 			Ft_Gpu_CoCmd_Button(phost, 5, 190, 100, 40, 12, 0, "\x1d\x02\x26\x28\x24\x20\x16\x18\x14");
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
+			Ft_App_WrCoCmd_Buffer(phost,TAG(4));          // assign the tag value
+			Ft_Gpu_CoCmd_FgColor(phost,(tag==4)?button_color_hover:button_color);
+			Ft_Gpu_CoCmd_Button(phost, 110, 10, 100, 40, 12, 0, "\x1b\x02\x28\x0c\x24\x14\x02\x1a");
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
+			Ft_App_WrCoCmd_Buffer(phost,TAG(5));          // assign the tag value
+			Ft_Gpu_CoCmd_FgColor(phost,(tag==5)?button_color_hover:button_color);
+			Ft_Gpu_CoCmd_Button(phost, 110, 60, 100, 40, 12, 0, "\x1b\x02\x28\x0c\x24\x14\x02\x1a");
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
 
 		break;
-		case PARAMETERS:
+		case MATERIAL:
+
+			storedMaterial = FLASH_Read_DataWord(0);
+
+			Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0xd8,0x00));
+
+			Ft_App_WrCoCmd_Buffer(phost,TAG(1));          // assign the tag value
+			Ft_Gpu_CoCmd_FgColor(phost,(tag==1)?button_color_hover:button_color);
+			Ft_Gpu_CoCmd_Button(phost, 5, 190, 100, 40, 12, 0, "\x5f");
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
+			if (tag >= 201 & tag <=203) {
+				Ft_App_WrCoCmd_Buffer(phost,TAG(201));          // assign the tag value
+				Ft_Gpu_CoCmd_FgColor(phost,(tag==201)?button_color_hover:button_color);
+				Ft_Gpu_CoCmd_Button(phost, 110, 10, 100, 40, 12, 0, "\x54");
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
+				Ft_App_WrCoCmd_Buffer(phost,TAG(202));          // assign the tag value
+				Ft_Gpu_CoCmd_FgColor(phost,(tag==202)?button_color_hover:button_color);
+				Ft_Gpu_CoCmd_Button(phost, 110, 60, 100, 40, 12, 0, "\x55");
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
+				Ft_App_WrCoCmd_Buffer(phost,TAG(203));          // assign the tag value
+				Ft_Gpu_CoCmd_FgColor(phost,(tag==203)?button_color_hover:button_color);
+				Ft_Gpu_CoCmd_Button(phost, 110, 110, 100, 40, 12, 0, "\x56");
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+			} else {
+				Ft_App_WrCoCmd_Buffer(phost,TAG(201));          // assign the tag value
+				Ft_Gpu_CoCmd_FgColor(phost,(storedMaterial==201)?button_color_selected:button_color);
+				Ft_Gpu_CoCmd_Button(phost, 110, 10, 100, 40, 12, 0, "\x54");
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
+				Ft_App_WrCoCmd_Buffer(phost,TAG(202));          // assign the tag value
+				Ft_Gpu_CoCmd_FgColor(phost,(storedMaterial==202)?button_color_selected:button_color);
+				Ft_Gpu_CoCmd_Button(phost, 110, 60, 100, 40, 12, 0, "\x55");
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+
+				Ft_App_WrCoCmd_Buffer(phost,TAG(203));          // assign the tag value
+				Ft_Gpu_CoCmd_FgColor(phost,(storedMaterial==203)?button_color_selected:button_color);
+				Ft_Gpu_CoCmd_Button(phost, 110, 110, 100, 40, 12, 0, "\x56");
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+			}
 		break;
 		case LOGS:
 		break;
@@ -499,6 +552,46 @@ ft_uint16_t API_Screen_MainScreen(Ft_Gpu_Hal_Context_t *phost)
 }
 
 ft_uint16_t API_Screen_SettingsScreen(Ft_Gpu_Hal_Context_t *phost)
+{
+	  Ft_Gpu_Hal_WrMemFromFlash(phost, RAM_G + 1000, SAMApp_Metric_L1, SAMApp_Metric_L1_SIZE); //çàãğóæàåì ìåòğèêó øğèôòà
+	  Ft_Gpu_Hal_WrMemFromFlash(phost, RAM_G + 1000 + SAMApp_Metric_L1_SIZE, SAMApp_L1, SAMApp_L1_SIZE); //çàãğóæàåì øğèôò
+
+	  Ft_Gpu_CoCmd_Dlstart(phost); // êîìàíäà íà÷àëà äèñïëåé-ëèñòà
+
+	  Ft_App_WrCoCmd_Buffer(phost,CLEAR_COLOR_RGB(0,0,0));
+	  Ft_App_WrCoCmd_Buffer(phost,CLEAR(0xff,0xff,0xff));
+
+	  //Ft_App_WrCoCmd_Buffer(phost,CLEAR_COLOR_RGB(0xff,0xff,0xff)); //óñòàíîâêà öâåòà ôîíà
+	  Ft_App_WrCoCmd_Buffer(phost,CLEAR(1,1,1)); //óñòàíîâêà öâåòà ôîíà
+	  Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(255,0,0)); // óñòàíîâêà öâåòà òåêñòà
+	  Ft_App_WrCoCmd_Buffer(phost,BITMAP_HANDLE(12)); //íàçíà÷åíèå íàøåìó øğèôòó óêàçàòåëÿ
+
+	  Ft_App_WrCoCmd_Buffer(phost,BITMAP_SOURCE(1085));
+	  Ft_App_WrCoCmd_Buffer(phost, BITMAP_LAYOUT(L1,3,21));
+	  Ft_App_WrCoCmd_Buffer(phost, BITMAP_SIZE(NEAREST, BORDER,BORDER,18,21));
+	  Ft_Gpu_CoCmd_SetFont(phost, 12, RAM_G + 1000);
+
+
+
+
+	Ft_App_Flush_Co_Buffer(phost);
+	Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
+	//while(0!=Ft_Gpu_Hal_Rd16(phost,REG_CMD_READ));
+
+	ft_uint16_t dloffset = Ft_Gpu_Hal_Rd16(phost,REG_CMD_DL); // ğàçìåğ êîèğóåìîãî äèñïëåé-ëèñòà
+	//dloffset -= 4;
+	Ft_Gpu_Hal_WrCmd32(phost,CMD_MEMCPY); // óêàçàíèå FT800 ñêîïèğîâàòü îáëàñòè ïàìÿòè
+	Ft_Gpu_Hal_WrCmd32(phost,100000L); // àäğåñ, êóäà áóäåì êîïèğîâàòü â îáëàñòè ãğàôè÷åñêîé ïàìÿòè RAM_G
+	Ft_Gpu_Hal_WrCmd32(phost,RAM_DL); // àäğåñ, îòêóäà êîïèğóåì
+	Ft_Gpu_Hal_WrCmd32(phost,dloffset); // êîëè÷åñòâî áàéò
+
+	Ft_Gpu_Hal_Sleep(50);
+	return dloffset;
+
+}
+
+
+ft_uint16_t API_Screen_MaterialScreen(Ft_Gpu_Hal_Context_t *phost)
 {
 	  Ft_Gpu_Hal_WrMemFromFlash(phost, RAM_G + 1000, SAMApp_Metric_L1, SAMApp_Metric_L1_SIZE); //çàãğóæàåì ìåòğèêó øğèôòà
 	  Ft_Gpu_Hal_WrMemFromFlash(phost, RAM_G + 1000 + SAMApp_Metric_L1_SIZE, SAMApp_L1, SAMApp_L1_SIZE); //çàãğóæàåì øğèôò

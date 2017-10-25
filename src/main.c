@@ -192,6 +192,12 @@ void main(void)
   LEDsSet(0x2);
 
   FLASH_Status FLASHStatus;
+  ft_uint32_t storedMaterial = FLASH_Read_DataWord(0);
+  if (storedMaterial >= 201 & storedMaterial <=203) {
+	  ;
+  } else {
+	  FLASHStatus = FLASH_Write_DataWord(0, 201);
+  }
 
 
 
@@ -223,7 +229,7 @@ void main(void)
 
 	  if (tag != 0){
 
-		  SAMAPP_API_Screen_Content(phost, SCREEN, dloffset, init_finished);
+		  SAMAPP_API_Screen_Content(phost, SCREEN, tag, dloffset, init_finished);
 		  Ft_Gpu_Hal_Sleep(5);
 
 		  switch (tag){
@@ -231,15 +237,15 @@ void main(void)
 				switch (SCREEN){
 					case MAIN:
 						SCREEN = SETTINGS;
-						// show settings
 						dloffset = API_Screen_SettingsScreen(phost);
 					break;
 					case SETTINGS:
 						SCREEN = MAIN;
-						// show main
 						dloffset = API_Screen_MainScreen(phost);
 					break;
-					case PARAMETERS:
+					case MATERIAL:
+						SCREEN = SETTINGS;
+						dloffset = API_Screen_SettingsScreen(phost);
 					break;
 					case LOGS:
 					break;
@@ -251,18 +257,38 @@ void main(void)
 			case 3:
 				flag = 0;
 			break;
+			case 4:
+				switch (SCREEN){
+					case MAIN:
+					break;
+					case SETTINGS:
+						SCREEN = MATERIAL;
+						dloffset = API_Screen_MaterialScreen(phost);
+					break;
+					case MATERIAL:
+						SCREEN = SETTINGS;
+						dloffset = API_Screen_SettingsScreen(phost);
+					break;
+					case LOGS:
+					break;
+				}
+			break;
+			case 201:
+			case 202:
+			case 203:
+				FLASHStatus = FLASH_Write_DataWord(0, tag);
+				//ft_uint32_t storedValue = FLASH_Read_DataWord(0);
+			break;
 		  }
 
 		  while (tag != 0){
 			  tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
 
-		//FLASHStatus = FLASH_Write_DataWord(0, init_finished);
-		//ft_uint32_t storedValue = FLASH_Read_DataWord(0);
-		//ft_uint32_t storedValue = FLASH_Read_DataWord(0);
+
 		  }
 
 	  } else {
-		  SAMAPP_API_Screen_Content(phost, SCREEN, dloffset, init_finished);
+		  SAMAPP_API_Screen_Content(phost, SCREEN, tag, dloffset, init_finished);
 		  Ft_Gpu_Hal_Sleep(5);
 	  }
 

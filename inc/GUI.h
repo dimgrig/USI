@@ -16,7 +16,7 @@
   {
     MAIN = 0x00, /*!<  */
     SETTINGS   = 0x01, /*!< */
-    PARAMETERS  = 0x02, /*!<  */
+	MATERIAL  = 0x02, /*!<  */
     LOGS  = 0x03  /*!<  */
   }Screen_TypeDef;
   
