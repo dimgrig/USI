@@ -8,6 +8,7 @@
 #include "FT_Platform.h"
 #include "FT_App.h"
 #include "arial.TTF_18_L1.rawh"
+#include "GUI.h"
 
 extern FT_PROGMEM ft_prog_uchar8_t SAMApp_Metric_L1[];
 extern FT_PROGMEM ft_prog_uchar8_t SAMApp_L1[];
@@ -353,20 +354,59 @@ ft_uint16_t SAMAPP_API_Screen_BackGround(Ft_Gpu_Hal_Context_t *phost, ft_char8_t
 
 }
 
-ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t dloffset, ft_uint16_t nmb)
+ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost, Screen_TypeDef SCREEN, ft_uint16_t dloffset, ft_uint16_t nmb)
 {
+
 	Ft_Gpu_CoCmd_Dlstart(phost); // начало нового дисплей-листа
 	Ft_Gpu_CoCmd_Append(phost,100000L, dloffset); // добавление к текущему набору команд, команд скопированных MEMCPY
 
-	//Ft_App_WrCoCmd_Buffer(phost,CLEAR_COLOR_RGB(0,0,0));
-	//Ft_App_WrCoCmd_Buffer(phost,CLEAR(0xff,0xff,0xff));
+	ft_uint32_t tag = 0;
 
-	Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0x00,0x00,0xff));
-	Ft_Gpu_CoCmd_Text(phost, 10, 50, 16, 0, "CONTENT");
-	Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0xd8,0x00));
-	Ft_Gpu_CoCmd_Number(phost, 10, 60, 16, 0, nmb);
+	switch (SCREEN){
+		case MAIN:
+			//Ft_App_WrCoCmd_Buffer(phost,CLEAR_COLOR_RGB(0,0,0));
+			//Ft_App_WrCoCmd_Buffer(phost,CLEAR(0xff,0xff,0xff));
 
-	//Ft_Gpu_Hal_WrCmd32(phost,CMD_E);
+			Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0x00,0x00,0xff));
+			Ft_Gpu_CoCmd_Text(phost, 10, 50, 16, 0, "CONTENT");
+			Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0xd8,0x00));
+			Ft_Gpu_CoCmd_Number(phost, 10, 60, 16, 0, nmb);
+
+			tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
+
+			Ft_App_WrCoCmd_Buffer(phost,TAG(1));          // assign the tag value
+			Ft_Gpu_CoCmd_FgColor(phost,(tag==1)?button_color_hover:button_color);
+			Ft_Gpu_CoCmd_Button(phost, 5, 190, 100, 40, 12, 0, "\x1d\x02\x26\x28\x24\x20\x16\x18\x14");
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+			Ft_App_WrCoCmd_Buffer(phost,TAG(2));          // assign the tag value
+			Ft_Gpu_CoCmd_FgColor(phost,(tag==2)?button_color_hover:button_color);
+			Ft_Gpu_CoCmd_Button(phost, 110, 190, 100, 40, 12, 0, "\x21\x2a\x26\x18");
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+			Ft_App_WrCoCmd_Buffer(phost,TAG(3));          // assign the tag value
+			Ft_Gpu_CoCmd_FgColor(phost,(tag==3)?button_color_hover:button_color);
+			Ft_Gpu_CoCmd_Button(phost, 215, 190, 100, 40, 12, 0, "\x25\x04\x24\x20\x26");
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+		break;
+		case SETTINGS:
+			SCREEN = MAIN;
+
+			tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
+
+			Ft_App_WrCoCmd_Buffer(phost,TAG(1));          // assign the tag value
+			Ft_Gpu_CoCmd_FgColor(phost,(tag==1)?button_color_hover:button_color);
+			Ft_Gpu_CoCmd_Button(phost, 5, 190, 100, 40, 12, 0, "\x1d\x02\x26\x28\x24\x20\x16\x18\x14");
+			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+
+		break;
+		case PARAMETERS:
+		break;
+		case LOGS:
+		break;
+	}
 
 	Ft_App_WrCoCmd_Buffer(phost,DISPLAY());
 	Ft_Gpu_CoCmd_Swap(phost);
@@ -379,286 +419,6 @@ ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t dlo
 
     Ft_Gpu_Hal_Sleep(50);
 }
-
-
-
-ft_uint8_t Read_Keys(Ft_Gpu_Hal_Context_t *phost)
-{
-  static ft_uint8_t Read_tag=0,temp_tag=0,ret_tag=0;
-  Read_tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
-  ret_tag = NULL;
-  if(Read_tag!=NULL)								// Allow if the Key is released
-  {
-    if(temp_tag!=Read_tag)
-    {
-      temp_tag = Read_tag;
-      sk = Read_tag;										// Load the Read tag to temp variable
-    }
-  }
-  else
-  {
-    if(temp_tag!=0)
-    {
-      ret_tag = temp_tag;
-    }
-    sk = 0;
-  }
-  return ret_tag;
-}
-
-
-
-// Info Screen//
-ft_void_t Info(Ft_Gpu_Hal_Context_t *phost)
-{
-	 ft_uint16_t dloffset = 0,z;
-	  Ft_CmdBuffer_Index = 0;
-	  ft_uint16_t FT_DispWidth = 320;
-	  ft_uint16_t FT_DispHeight = 240;
-	// Touch Screen Calibration
-	  char *info[] = {  "FT800 Sketch Application",
-					   "APP to demonstrate interactive Sketch,",
-					   "using Sketch, Slider,",
-					   "& Buttons."
-	 	  	                    };
-
-	  Ft_Gpu_CoCmd_Dlstart(phost);
-	  Ft_App_WrCoCmd_Buffer(phost,CLEAR(1,1,1));
-	  Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(255,255,255));
-	  Ft_Gpu_CoCmd_Text(phost,10,150,18,0,"Please tap on a dot");
-//	  Ft_Gpu_CoCmd_Calibrate(phost,0);
-//	  Ft_App_Flush_Co_Buffer(phost);
-//	  Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
-	// Ftdi Logo animation
-//	  Ft_Gpu_CoCmd_Logo(phost);
-	  Ft_App_Flush_Co_Buffer(phost);
-	  Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
-	  //while(0!=Ft_Gpu_Hal_Rd16(phost,REG_CMD_READ));
-	  dloffset = Ft_Gpu_Hal_Rd16(phost,REG_CMD_DL);
-	  //dloffset -= 4;
-
-	#ifdef FT_81X_ENABLE
-	  dloffset -= 2*4;//remove two more instructions in case of 81x
-	#endif
-
-
-	  Ft_Gpu_Hal_WrCmd32(phost,CMD_MEMCPY);
-	  Ft_Gpu_Hal_WrCmd32(phost,100000L);
-	  Ft_Gpu_Hal_WrCmd32(phost,RAM_DL);
-	  Ft_Gpu_Hal_WrCmd32(phost,dloffset);
-
-	  Ft_Gpu_Hal_Sleep(500);
-	  //Enter into Info Screen
-	  do
-	  {
-	    Ft_Gpu_CoCmd_Dlstart(phost);
-	    Ft_Gpu_CoCmd_Append(phost,100000L,dloffset);
-	    //Reset the BITMAP properties used during Logo animation
-//	    Ft_App_WrCoCmd_Buffer(phost,BITMAP_TRANSFORM_A(256));
-//	    Ft_App_WrCoCmd_Buffer(phost,BITMAP_TRANSFORM_A(256));
-//	    Ft_App_WrCoCmd_Buffer(phost,BITMAP_TRANSFORM_B(0));
-//	    Ft_App_WrCoCmd_Buffer(phost,BITMAP_TRANSFORM_C(0));
-//	    Ft_App_WrCoCmd_Buffer(phost,BITMAP_TRANSFORM_D(0));
-//	    Ft_App_WrCoCmd_Buffer(phost,BITMAP_TRANSFORM_E(256));
-//	    Ft_App_WrCoCmd_Buffer(phost,BITMAP_TRANSFORM_F(0));
-//	    Ft_App_WrCoCmd_Buffer(phost,SAVE_CONTEXT());
-	    //Display the information with transparent Logo using Edge Strip
-//	    Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(219,180,150));
-//	    Ft_App_WrCoCmd_Buffer(phost,COLOR_A(220));
-//	    Ft_App_WrCoCmd_Buffer(phost,BEGIN(EDGE_STRIP_A));
-//	    Ft_App_WrCoCmd_Buffer(phost,VERTEX2F(0,FT_DispHeight*16));
-//	    Ft_App_WrCoCmd_Buffer(phost,VERTEX2F(FT_DispWidth*16,FT_DispHeight*16));
-//	    Ft_App_WrCoCmd_Buffer(phost,COLOR_A(255));
-//	    Ft_App_WrCoCmd_Buffer(phost,RESTORE_CONTEXT());
-//	    Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0,0,0));
-	   // INFORMATION
-
-	    Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0x00,0x00,0xff));
-	    Ft_Gpu_CoCmd_Text(phost,10,20,18,0,"1");
-	    Ft_Gpu_CoCmd_Text(phost,10,60,18,0,"2");
-	    Ft_Gpu_CoCmd_Text(phost,10,90,18,0,"3");
-	    Ft_Gpu_CoCmd_Text(phost,10,120,18,0,"4");
-	    Ft_Gpu_CoCmd_Text(phost,10,200,18,0,"Click to play");
-//	    if(sk!='P')
-//	    Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(255,255,255));
-//	    else
-//	    Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(100,100,100));
-//	    Ft_App_WrCoCmd_Buffer(phost,BEGIN(FTPOINTS));
-//	    Ft_App_WrCoCmd_Buffer(phost,POINT_SIZE(20*16));
-//	    Ft_App_WrCoCmd_Buffer(phost,TAG('P'));
-//	    Ft_App_WrCoCmd_Buffer(phost,VERTEX2F((FT_DispWidth/2)*16,(FT_DispHeight-60)*16));
-//	    Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(180,35,35));
-//	    Ft_App_WrCoCmd_Buffer(phost,BEGIN(BITMAPS));
-
-
-//	#ifdef DISPLAY_RESOLUTION_WVGA
-//	    Ft_App_WrCoCmd_Buffer(phost, BITMAP_HANDLE(14));
-//	    Ft_App_WrCoCmd_Buffer(phost, CELL(4));
-//	    Ft_App_WrCoCmd_Buffer(phost,VERTEX2F((FT_DispWidth/2-14)*16,(FT_DispHeight-75)*16));
-//	#else
-//	    Ft_App_WrCoCmd_Buffer(phost,VERTEX2II((FT_DispWidth/2)-14,(FT_DispHeight-75),14,4));
-//	#endif
-//	    Ft_App_WrCoCmd_Buffer(phost,END());
-
-	    Ft_App_WrCoCmd_Buffer(phost,DISPLAY());
-	    Ft_Gpu_CoCmd_Swap(phost);
-	    Ft_App_Flush_Co_Buffer(phost);
-	    Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
-
-	    Ft_Gpu_Hal_Sleep(50);
-	  }while(Read_Keys(phost)!='P');
-	  //Ft_Play_Sound(0x50,255,0xc0);
-}
-
-/* Application*/
-ft_void_t Sketch(Ft_Gpu_Hal_Context_t *phost)
-{
-  ft_uint32_t  tracker,color=0;
-  ft_uint16_t  val=32768;
-  ft_uint8_t tag =0;
-  ft_uint16_t FT_DispWidth = 320;
-  	  ft_uint16_t FT_DispHeight = 240;
-//  Set the bitmap properties , sketch properties and Tracker for the sliders
-  Ft_Gpu_CoCmd_Dlstart(phost);
-  Ft_Gpu_CoCmd_FgColor(phost,0xffffff);        // Set the bg color
-  Ft_Gpu_CoCmd_Track(phost,(320-30),40,8,280-100,1);
-
-#if defined FT_801_ENABLE
-  Ft_Gpu_CoCmd_CSketch(phost,0,10,320-40,280-30,0,L8,1500L);
-#elif defined FT_81X_ENABLE
-  Ft_Gpu_CoCmd_Sketch(phost,0,10,FT_DispWidth-40,FT_DispHeight-30,0,L8);
-#else
-  Ft_Gpu_CoCmd_Sketch(phost,0,10,FT_DispWidth-40,FT_DispHeight-30,0,L8);
-#endif
-/*
-#if defined FT_801_ENABLE
-  Ft_Gpu_CoCmd_CSketch(phost,0,10,FT_DispWidth-40,FT_DispHeight-20,0,L8,1500L);
-#elif defined FT_81X_ENABLE
-  Ft_Gpu_CoCmd_Sketch(phost,0,10,FT_DispWidth-40,FT_DispHeight-20,0,L8);
-#else
-  Ft_Gpu_CoCmd_Sketch(phost,0,10,FT_DispWidth-40,FT_DispHeight-20,0,L8);
-#endif
-  */
-  Ft_Gpu_CoCmd_MemZero(phost,0L,(FT_DispWidth-40)*(FT_DispHeight-20L));
-  Ft_App_WrCoCmd_Buffer(phost,BITMAP_HANDLE(1));
-  Ft_App_WrCoCmd_Buffer(phost,BITMAP_SOURCE(0));
-  Ft_App_WrCoCmd_Buffer(phost,BITMAP_LAYOUT(L8,FT_DispWidth-40,FT_DispHeight-20));
-#ifdef FT_81X_ENABLE
-  Ft_App_WrCoCmd_Buffer(phost,BITMAP_LAYOUT_H((FT_DispWidth-40)>>10,(FT_DispHeight-20)>>9));
-#endif
-  Ft_App_WrCoCmd_Buffer(phost,BITMAP_SIZE(NEAREST,BORDER,BORDER,(FT_DispWidth-40),(FT_DispHeight-20)));
-#ifdef FT_81X_ENABLE
-  Ft_App_WrCoCmd_Buffer(phost,BITMAP_SIZE_H((FT_DispWidth-40)>>9,(FT_DispHeight-20)>>9));
-#endif
-  Ft_Gpu_CoCmd_Swap(phost);
-  Ft_App_Flush_Co_Buffer(phost);
-  Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
-  while(1)
-  {
-    // Check the tracker
-    tracker = Ft_Gpu_Hal_Rd32(phost,REG_TRACKER);
-        // Check the Tag
-    tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
-    //  clear the GRAM when user enter the Clear button
-    if(tag==2)
-    {
-  	Ft_Gpu_CoCmd_Dlstart(phost);
- 	Ft_Gpu_CoCmd_MemZero(phost,0,(FT_DispWidth-40)*(FT_DispHeight-20L)); // Clear the gram frm 1024
-	Ft_App_Flush_Co_Buffer(phost);
-        Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
-    }
-    // compute the color from the tracker
-    if((tracker&0xff)==1)      // check the tag val
-    {
-      val = (tracker>>16);
-    }
-    color = val*255;
-    // Start the new display list
-    Ft_Gpu_CoCmd_Dlstart(phost);                  // Start the display list
-    Ft_App_WrCoCmd_Buffer(phost,CLEAR(1,1,1));	  // clear the display
-    Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(255,255,255));  // color
-    Ft_Gpu_CoCmd_BgColor(phost,color);
-    Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
-    Ft_App_WrCoCmd_Buffer(phost,TAG(1));          // assign the tag value
-    Ft_Gpu_CoCmd_FgColor(phost,color);
-   // draw the sliders
-    Ft_Gpu_CoCmd_Slider(phost,(FT_DispWidth-30),40,8,(FT_DispHeight-100),0,val,65535);	 // slide j1 cmd
-    Ft_Gpu_CoCmd_FgColor(phost,(tag==2)?0x0000ff:color);
-    Ft_App_WrCoCmd_Buffer(phost,TAG(2));          // assign the tag value
-    Ft_Gpu_CoCmd_Button(phost,(FT_DispWidth-35),(FT_DispHeight-45),35,25,26,0,"CLR");
-    Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
-
-    Ft_Gpu_CoCmd_Text(phost,FT_DispWidth-35,10,26,0,"Color");
-
-    Ft_App_WrCoCmd_Buffer(phost,LINE_WIDTH(1*16));
-    Ft_App_WrCoCmd_Buffer(phost,BEGIN(RECTS));
-    Ft_App_WrCoCmd_Buffer(phost,VERTEX2F(0,10*16));
-    Ft_App_WrCoCmd_Buffer(phost,VERTEX2F((ft_int16_t)(FT_DispWidth-40)*16,(ft_int16_t)(FT_DispHeight-20)*16));
-
-
-    Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB((color>>16)&0xff,(color>>8)&0xff,(color)&0xff));
-    Ft_App_WrCoCmd_Buffer(phost,BEGIN(BITMAPS));
-    Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(0,10,1,0));
-    Ft_App_WrCoCmd_Buffer(phost,END());
-    Ft_App_WrCoCmd_Buffer(phost,DISPLAY());
-    Ft_Gpu_CoCmd_Swap(phost);
-    Ft_App_Flush_Co_Buffer(phost);
-    Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
-  }
-}
-
-ft_void_t SAMAPP_Russian(Ft_Gpu_Hal_Context_t *phost)
-{
-  Ft_Gpu_Hal_WrMemFromFlash(phost, RAM_G + 1000, SAMApp_Metric_L1, SAMApp_Metric_L1_SIZE); //загружаем метрику шрифта
-  Ft_Gpu_Hal_WrMemFromFlash(phost, RAM_G + 1000 + SAMApp_Metric_L1_SIZE, SAMApp_L1, SAMApp_L1_SIZE); //загружаем шрифт
-
-  Ft_Gpu_CoCmd_Dlstart(phost); // команда начала дисплей-листа
-
-  Ft_App_WrCoCmd_Buffer(phost,CLEAR_COLOR_RGB(0xff,0xff,0xff)); //установка цвета фона
-  Ft_App_WrCoCmd_Buffer(phost,CLEAR(1,1,1)); //установка цвета фона
-  Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(255,0,0)); // установка цвета текста
-  Ft_App_WrCoCmd_Buffer(phost,BITMAP_HANDLE(12)); //назначение нашему шрифту указателя
-
-  Ft_App_WrCoCmd_Buffer(phost,BITMAP_SOURCE(1085));
-  Ft_App_WrCoCmd_Buffer(phost, BITMAP_LAYOUT(L1,3,21));
-  Ft_App_WrCoCmd_Buffer(phost, BITMAP_SIZE(NEAREST, BORDER,BORDER,18,21));
-  Ft_Gpu_CoCmd_SetFont(phost, 12, RAM_G + 1000);
-
-//  Ft_App_WrCoCmd_Buffer(phost,BEGIN(BITMAPS));
-//  for(int i=1;i<=10;i++)
-//  {
-//   //show font 1~10 in low 1
-//   Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(i*18,20,12,i));
-//   //show font 11~20 in low 2
-//   Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(i*18,56,12,i+10));
-//  }
-//  Ft_App_WrCoCmd_Buffer(phost,END());
-
-  Ft_Gpu_CoCmd_Text(phost, 10, 80, 12, 0, "\x11\x21\x24\x14\x06\x0c\x28\x43\x5b\x5d");
-
-  Ft_App_WrCoCmd_Buffer(phost,DISPLAY());
-  Ft_Gpu_CoCmd_Swap(phost);
-  Ft_App_Flush_Co_Buffer(phost);
-  Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
-  Ft_Gpu_Hal_Sleep(300);
- }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ft_uint16_t API_Screen_MainScreen(Ft_Gpu_Hal_Context_t *phost)
 {
@@ -681,14 +441,6 @@ ft_uint16_t API_Screen_MainScreen(Ft_Gpu_Hal_Context_t *phost)
 	  Ft_Gpu_CoCmd_SetFont(phost, 12, RAM_G + 1000);
 
 
-	ft_uint32_t white = COLOR_RGB(0xbb,0xbb,0xbb);
-	ft_uint32_t gray = COLOR_RGB(0x77,0x77,0x77);
-	ft_uint32_t button_color = COLOR_RGB(0x00,0x26,0x77);
-	ft_uint32_t button_color_hover = COLOR_RGB(0x00,0x126,0x55);
-	ft_uint16_t FT_Width = 320;
-	ft_uint16_t FT_Height = 240;
-
-
 	Ft_App_WrCoCmd_Buffer(phost, white);
 	Ft_Gpu_CoCmd_Text(phost, 2, 7, 12, 0, "\x21\x20\x18\x02\x12\x02\x1e\x14\x42"); //Показания
 	Ft_Gpu_CoCmd_Text(phost, 117, 7,  12, 0, "\x01\x20\x60"); //Fk=
@@ -706,25 +458,6 @@ ft_uint16_t API_Screen_MainScreen(Ft_Gpu_Hal_Context_t *phost)
 	Ft_Gpu_CoCmd_Text(phost, 117, 147, 12, 0, "\x01\x20\x60"); //Fk=
 	Ft_Gpu_CoCmd_Text(phost, 227, 147, 12, 0, "\x01\x18\x60"); //Ak=
 
-
-	int tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
-
-	Ft_App_WrCoCmd_Buffer(phost,TAG(1));          // assign the tag value
-	Ft_Gpu_CoCmd_FgColor(phost,(tag==1)?button_color_hover:button_color);
-	Ft_Gpu_CoCmd_Button(phost, 5, 190, 100, 40, 12, 0, "\x1d\x02\x26\x28\x24\x20\x16\x18\x14");
-	Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
-
-	Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
-	Ft_App_WrCoCmd_Buffer(phost,TAG(2));          // assign the tag value
-	Ft_Gpu_CoCmd_FgColor(phost,(tag==2)?button_color_hover:button_color);
-	Ft_Gpu_CoCmd_Button(phost, 110, 190, 100, 40, 12, 0, "STOP");
-	Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
-
-	Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
-	Ft_App_WrCoCmd_Buffer(phost,TAG(2));          // assign the tag value
-	Ft_Gpu_CoCmd_FgColor(phost,(tag==2)?button_color_hover:button_color);
-	Ft_Gpu_CoCmd_Button(phost, 215, 190, 100, 40, 12, 0, "\x25\x04\x24\x20\x26");
-	Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
 
 	Ft_App_WrCoCmd_Buffer(phost,gray);
 	Ft_App_WrCoCmd_Buffer(phost,BEGIN(LINES));
@@ -746,6 +479,45 @@ ft_uint16_t API_Screen_MainScreen(Ft_Gpu_Hal_Context_t *phost)
 	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(220, 175, 0, 0));
 
 	Ft_App_WrCoCmd_Buffer(phost,END());
+
+
+
+	Ft_App_Flush_Co_Buffer(phost);
+	Ft_Gpu_Hal_WaitCmdfifo_empty(phost);
+	//while(0!=Ft_Gpu_Hal_Rd16(phost,REG_CMD_READ));
+
+	ft_uint16_t dloffset = Ft_Gpu_Hal_Rd16(phost,REG_CMD_DL); // размер коируемого дисплей-листа
+	//dloffset -= 4;
+	Ft_Gpu_Hal_WrCmd32(phost,CMD_MEMCPY); // указание FT800 скопировать области памяти
+	Ft_Gpu_Hal_WrCmd32(phost,100000L); // адрес, куда будем копировать в области графической памяти RAM_G
+	Ft_Gpu_Hal_WrCmd32(phost,RAM_DL); // адрес, откуда копируем
+	Ft_Gpu_Hal_WrCmd32(phost,dloffset); // количество байт
+
+	Ft_Gpu_Hal_Sleep(50);
+	return dloffset;
+
+}
+
+ft_uint16_t API_Screen_SettingsScreen(Ft_Gpu_Hal_Context_t *phost)
+{
+	  Ft_Gpu_Hal_WrMemFromFlash(phost, RAM_G + 1000, SAMApp_Metric_L1, SAMApp_Metric_L1_SIZE); //загружаем метрику шрифта
+	  Ft_Gpu_Hal_WrMemFromFlash(phost, RAM_G + 1000 + SAMApp_Metric_L1_SIZE, SAMApp_L1, SAMApp_L1_SIZE); //загружаем шрифт
+
+	  Ft_Gpu_CoCmd_Dlstart(phost); // команда начала дисплей-листа
+
+	  Ft_App_WrCoCmd_Buffer(phost,CLEAR_COLOR_RGB(0,0,0));
+	  Ft_App_WrCoCmd_Buffer(phost,CLEAR(0xff,0xff,0xff));
+
+	  //Ft_App_WrCoCmd_Buffer(phost,CLEAR_COLOR_RGB(0xff,0xff,0xff)); //установка цвета фона
+	  Ft_App_WrCoCmd_Buffer(phost,CLEAR(1,1,1)); //установка цвета фона
+	  Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(255,0,0)); // установка цвета текста
+	  Ft_App_WrCoCmd_Buffer(phost,BITMAP_HANDLE(12)); //назначение нашему шрифту указателя
+
+	  Ft_App_WrCoCmd_Buffer(phost,BITMAP_SOURCE(1085));
+	  Ft_App_WrCoCmd_Buffer(phost, BITMAP_LAYOUT(L1,3,21));
+	  Ft_App_WrCoCmd_Buffer(phost, BITMAP_SIZE(NEAREST, BORDER,BORDER,18,21));
+	  Ft_Gpu_CoCmd_SetFont(phost, 12, RAM_G + 1000);
+
 
 
 

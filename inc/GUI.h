@@ -12,8 +12,15 @@
     REMOVAL  = 0x03  /*!<  */
   }State_TypeDef;
   
-
+  typedef enum
+  {
+    MAIN = 0x00, /*!<  */
+    SETTINGS   = 0x01, /*!< */
+    PARAMETERS  = 0x02, /*!<  */
+    LOGS  = 0x03  /*!<  */
+  }Screen_TypeDef;
   
+
 void placeState(State_TypeDef STATE);
 void placeReset();
 void placeValue(double value_f, uint8_t i, uint8_t j, uint16_t mainScreenPoints[5][2], uint8_t digits, uint8_t reset);

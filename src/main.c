@@ -38,6 +38,9 @@ void USB_SetLeds(uint8_t);
 
 uint16_t init_finished = 0;
 
+Screen_TypeDef SCREEN = MAIN;
+ft_uint16_t dloffset;
+
 State_TypeDef STATE = IDLE;
 uint16_t TouchDelay = 0;
 
@@ -199,7 +202,7 @@ void main(void)
 
   // SAMAPP_Russian(phost);
 //SAMAPP_API_Screen_BackGround
-   ft_uint16_t dloffset = API_Screen_MainScreen(phost); // 2 появляется фон, текст background и число 777 и текст content
+   dloffset = API_Screen_MainScreen(phost); // 2 появляется фон, текст background и число 777 и текст content
   // SAMAPP_API_Screen_Content(phost, dloffset, init_finished); // 2 ШРИФТ!!!
 
   // Info(); // 3 ничего не появляется - цикл do while
@@ -214,24 +217,57 @@ void main(void)
 
   while(1)
   {
-    //DelayUS(100);
-	  int tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
-	  	//  clear the GRAM when user enter the Clear button
-	  	if(tag == 1)
-	  	{
-	  		flag = 1;
-	  		FLASHStatus = FLASH_Write_DataWord(0, init_finished);
-	  		ft_uint32_t storedValue = FLASH_Read_DataWord(0);
-	  	}
-	  	if(tag == 2)
-	  	{
-	  		flag = 0;
-	  		ft_uint32_t storedValue = FLASH_Read_DataWord(0);
-	  	}
 
 	  LEDsSet(0x2);
-	  SAMAPP_API_Screen_Content(phost, dloffset, init_finished);
-	  Ft_Gpu_Hal_Sleep(5);
+	  int tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
+
+	  if (tag != 0){
+
+		  SAMAPP_API_Screen_Content(phost, SCREEN, dloffset, init_finished);
+		  Ft_Gpu_Hal_Sleep(5);
+
+		  switch (tag){
+			case 1:
+				switch (SCREEN){
+					case MAIN:
+						SCREEN = SETTINGS;
+						// show settings
+						dloffset = API_Screen_SettingsScreen(phost);
+					break;
+					case SETTINGS:
+						SCREEN = MAIN;
+						// show main
+						dloffset = API_Screen_MainScreen(phost);
+					break;
+					case PARAMETERS:
+					break;
+					case LOGS:
+					break;
+				}
+			break;
+			case 2:
+				flag = 1;
+			break;
+			case 3:
+				flag = 0;
+			break;
+		  }
+
+		  while (tag != 0){
+			  tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
+
+		//FLASHStatus = FLASH_Write_DataWord(0, init_finished);
+		//ft_uint32_t storedValue = FLASH_Read_DataWord(0);
+		//ft_uint32_t storedValue = FLASH_Read_DataWord(0);
+		  }
+
+	  } else {
+		  SAMAPP_API_Screen_Content(phost, SCREEN, dloffset, init_finished);
+		  Ft_Gpu_Hal_Sleep(5);
+	  }
+
+
+
 
 
 //	  LEDsSet(0x3);
@@ -240,10 +276,6 @@ void main(void)
 //	  SAMAPP_API_Screen_Content(phost, dloffset, init_finished);
 //	  Ft_Gpu_Hal_Sleep(5);
 
-
-	  while (tag != 0){
-		  tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
-	  }
 
 	  if (flag != 0)
 	  	  init_finished++;
