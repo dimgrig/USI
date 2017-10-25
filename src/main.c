@@ -11,6 +11,7 @@
 #include "t14-adc.h"
 #include "t14-ssi.h"
 #include "t14-power.h"
+#include "t14-flash.h"
 #include "GUI.h"
 
 
@@ -186,6 +187,14 @@ void main(void)
 
 
   LEDsSet(0x2);
+
+  FLASH_Status FLASHStatus;
+
+
+
+
+
+
   // SAMAPP_API_Screen(phost, "START START START"); // 1  появляется фон и текст +
 
   // SAMAPP_Russian(phost);
@@ -199,7 +208,7 @@ void main(void)
 
   LEDsSet(0x1);
 
-  Ft_Gpu_Hal_Sleep(2000);
+  Ft_Gpu_Hal_Sleep(50);
 
   int flag = 1;
 
@@ -211,10 +220,13 @@ void main(void)
 	  	if(tag == 1)
 	  	{
 	  		flag = 1;
+	  		FLASHStatus = FLASH_Write_DataWord(0, init_finished);
+	  		ft_uint32_t storedValue = FLASH_Read_DataWord(0);
 	  	}
 	  	if(tag == 2)
 	  	{
 	  		flag = 0;
+	  		ft_uint32_t storedValue = FLASH_Read_DataWord(0);
 	  	}
 
 	  LEDsSet(0x2);
