@@ -46,6 +46,7 @@ uint16_t TouchDelay = 0;
 
 double F = 0; //текущие
 double A = 0;
+double E, HB, ST, SB;
 
 double F1 = 0; //измерение
 double A0 = 0; //касание
@@ -199,7 +200,7 @@ void main(void)
 	  FLASHStatus = FLASH_Write_DataWord(0, 201);
   }
 
-
+  dloffset = API_Screen_BasicScreen(phost, SCREEN);
 
 
 
@@ -208,7 +209,7 @@ void main(void)
 
   // SAMAPP_Russian(phost);
 //SAMAPP_API_Screen_BackGround
-   dloffset = API_Screen_MainScreen(phost); // 2 появляется фон, текст background и число 777 и текст content
+ //  dloffset = API_Screen_MainScreen(phost); // 2 появляется фон, текст background и число 777 и текст content
   // SAMAPP_API_Screen_Content(phost, dloffset, init_finished); // 2 ШРИФТ!!!
 
   // Info(); // 3 ничего не появляется - цикл do while
@@ -229,7 +230,7 @@ void main(void)
 
 	  if (tag != 0){
 
-		  SAMAPP_API_Screen_Content(phost, SCREEN, tag, dloffset, init_finished);
+		  SAMAPP_API_Screen_Content(phost, SCREEN, STATE, tag, dloffset, F, A, A0, H, F1, A1, E, HB, ST, SB, init_finished);
 		  Ft_Gpu_Hal_Sleep(5);
 
 		  switch (tag){
@@ -237,24 +238,56 @@ void main(void)
 				switch (SCREEN){
 					case MAIN:
 						SCREEN = SETTINGS;
-						dloffset = API_Screen_SettingsScreen(phost);
+						dloffset = API_Screen_BasicScreen(phost, SCREEN);
 					break;
 					case SETTINGS:
 						SCREEN = MAIN;
-						dloffset = API_Screen_MainScreen(phost);
+						dloffset = API_Screen_BasicScreen(phost, SCREEN);
 					break;
 					case MATERIAL:
 						SCREEN = SETTINGS;
-						dloffset = API_Screen_SettingsScreen(phost);
+						dloffset = API_Screen_BasicScreen(phost, SCREEN);
 					break;
 					case LOGS:
+						SCREEN = SETTINGS;
+						dloffset = API_Screen_BasicScreen(phost, SCREEN);
 					break;
 				}
 			break;
 			case 2:
+				switch (STATE)
+			  {
+				case IDLE:
+				  STATE = TOUCH;
+				break;
+				case TOUCH:
+				  A0 = A;
+				  STATE = MEASURE;
+				break;
+				case MEASURE:
+				  F1 = F;//измерение
+				  A1 = A;
+				  STATE = REMOVAL;
+				break;
+				case REMOVAL:
+				  H = A;
+
+				  T14math(&E, &ST, &SB, &HB, F1, A0, A1, H);
+				  STATE = RESULTS;
+				break;
+				case RESULTS:
+					//clear
+				  STATE = TOUCH;
+				break;
+			  }
+
+				SAMAPP_API_Screen_Content(phost, SCREEN, STATE, tag, dloffset, F, A, A0, H, F1, A1, E, HB, ST, SB, init_finished);
+				Ft_Gpu_Hal_Sleep(5);
 				flag = 1;
 			break;
 			case 3:
+				STATE = IDLE;
+				SAMAPP_API_Screen_Content(phost, SCREEN, STATE, tag, dloffset, F, A, A0, H, F1, A1, E, HB, ST, SB, init_finished);
 				flag = 0;
 			break;
 			case 4:
@@ -263,11 +296,23 @@ void main(void)
 					break;
 					case SETTINGS:
 						SCREEN = MATERIAL;
-						dloffset = API_Screen_MaterialScreen(phost);
+						dloffset = API_Screen_BasicScreen(phost, SCREEN);
 					break;
 					case MATERIAL:
-						SCREEN = SETTINGS;
-						dloffset = API_Screen_SettingsScreen(phost);
+					break;
+					case LOGS:
+					break;
+				}
+			break;
+			case 5:
+				switch (SCREEN){
+					case MAIN:
+					break;
+					case SETTINGS:
+						SCREEN = LOGS;
+						dloffset = API_Screen_BasicScreen(phost, SCREEN);
+					break;
+					case MATERIAL:
 					break;
 					case LOGS:
 					break;
@@ -283,12 +328,11 @@ void main(void)
 
 		  while (tag != 0){
 			  tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
-
-
 		  }
 
 	  } else {
-		  SAMAPP_API_Screen_Content(phost, SCREEN, tag, dloffset, init_finished);
+		  SAMAPP_API_Screen_Content(phost, SCREEN, STATE, tag, dloffset, F, A, A0, H, F1, A1, E, HB, ST, SB, init_finished);
+		  tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
 		  Ft_Gpu_Hal_Sleep(5);
 	  }
 
@@ -305,6 +349,7 @@ void main(void)
 
 	  if (flag != 0)
 	  	  init_finished++;
+	  	  USB_Send_Data(init_finished);
     //SAMAPP_API_Screen(phost, "START START START");
 
     /* if any data received from PC */
@@ -428,7 +473,7 @@ void Timer2IntrHandler (void)
 
   // Clear update interrupt bit
   TIM_ClearITPendingBit(TIM2,TIM_FLAG_Update);
-  /*
+
   float adc_value_f = get_adc_value();
 
   //GUI_Text(10, 10, &adc_value_c[0], 6, White, Black);
@@ -444,7 +489,7 @@ void Timer2IntrHandler (void)
   A = A1K*ReadSSI()+A1B;//A1cal/adc1cal * adc_value_f;
 
   //placeValuesADC(F, A);
-
+/*
   if (TouchDelay == 0)
   {
     LEDsSet(0x01);
@@ -459,8 +504,7 @@ void Timer2IntrHandler (void)
     TouchDelay++;
     LEDsSet(0x02);
   }
-
-  */
+*/
 }
 
 

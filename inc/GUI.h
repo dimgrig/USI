@@ -9,7 +9,8 @@
     IDLE = 0x00, /*!<  */
     TOUCH   = 0x01, /*!< */
     MEASURE  = 0x02, /*!<  */
-    REMOVAL  = 0x03  /*!<  */
+    REMOVAL  = 0x03,  /*!<  */
+	RESULTS  = 0x04  /*!<  */
   }State_TypeDef;
   
   typedef enum
