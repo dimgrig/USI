@@ -35,7 +35,7 @@ void ADC_init()
   ADC_InitStruct.ADC_ScanConvMode = ENABLE; //DISABLE;
   ADC_InitStruct.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;  
   ADC_InitStruct.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
-  ADC_InitStruct.ADC_NbrOfConversion = 1;
+  ADC_InitStruct.ADC_NbrOfConversion = 10;
   
   ADC_Init(ADC1, &ADC_InitStruct);  //Конифигурируем модуль ADC заданной структурой
   /*Далее делаем следующие настройки для регулярного канала: 
@@ -49,13 +49,19 @@ void ADC_init()
 ////  ADC1->CR2 |= ADC_CR2_CONT; //Режим непрерывного преобразования.
 //// ADC1->CR2 |= ADC_CR2_SWSTART;
   
-  ADC1->CR1;
-  ADC1->CR2;
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_24Cycles);
+  ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE);
+
+//  ADC1->CR1;
+//  ADC1->CR2;
    /* Enable ADC1 */
+  ADC_DMACmd(ADC1, ENABLE); //Enable ADC1 DMA
   ADC_Cmd(ADC1, ENABLE);
   /* Wait until the ADC1 is ready */
+
   while(ADC_GetFlagStatus(ADC1, ADC_FLAG_ADONS) == RESET){}
 
+  ADC_SoftwareStartConv(ADC1);
 }
 
 

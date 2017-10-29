@@ -9,6 +9,7 @@
 #include "t14-timer.h"
 //#include "SMSD.h"
 #include "t14-adc.h"
+#include "t14-dma.h"
 #include "t14-ssi.h"
 #include "t14-power.h"
 #include "t14-flash.h"
@@ -132,7 +133,9 @@ void main(void)
   SPI_TP_CS_HIGH();
   SPI_LCD_CS_HIGH();
 
+  DMA_init();
   ADC_init();
+
   InitSSI();
 
 //  LCD_Initializtion();
@@ -474,13 +477,21 @@ void Timer2IntrHandler (void)
   // Clear update interrupt bit
   TIM_ClearITPendingBit(TIM2,TIM_FLAG_Update);
 
-  float adc_value_f = get_adc_value();
+////////  float adc_value_f = get_adc_value();
 
   //GUI_Text(10, 10, &adc_value_c[0], 6, White, Black);
 
   //F = F1K/ADC_VOLTS * adc_value_f + F1B;
-  F = F1K * adc_value_f + F1B;
+////////  F = F1K * adc_value_f + F1B;
   //костыль
+  int sum = 0;
+  for (int i = 0 ; i < DMA_BUFFER_SIZE; i++){
+  	   sum += DMA_BUFFER[i];
+     }
+  sum = sum / DMA_BUFFER_SIZE;
+  F = F1K * sum * (ADC_VOLTS / ADC_MAX_BITS) + F1B;
+
+
   if (F < 0.099)
   {
     F = 0;
@@ -545,6 +556,39 @@ void RCC_Initializatiion(void)
 void USB_LP_IRQHandler (void)
 {
   USB_Istr();
+}
+
+
+
+void DMA1_Channel1_IRQHandler(void)
+{
+   DMA_ClearITPendingBit( DMA1_IT_TC1);
+   DMA_ITConfig(DMA1_Channel1, DMA1_IT_TC1, DISABLE);
+
+
+   for (int i = 0 ; i < DMA_BUFFER_SIZE; i++){
+	   int a = DMA_BUFFER[i];
+   }
+
+//   if(curr_sample<OVER_SAMPL)
+//   {
+//   ADC_SUM[0]+=ADC_VAL[0];
+//   ADC_SUM[1]+=ADC_VAL[1];
+//   ADC_SUM[2]+=ADC_VAL[2];
+//   ADC_SUM[3]+=ADC_VAL[3];
+//   ADC_SUM[4]+=ADC_VAL[4];
+//   ADC_SUM[5]+=ADC_VAL[5];
+//   ADC_SUM[6]+=ADC_VAL[6];
+//   ADC_SUM[7]+=ADC_VAL[7];
+//   }
+//
+//   curr_sample++;
+
+   DMA_ITConfig(DMA1_Channel1, DMA1_IT_TC1, ENABLE);
+
+//   if(curr_sample>=OVER_SAMPL)
+//   DMA_ITConfig(DMA1_Channel1, DMA1_IT_TC1, DISABLE);
+
 }
 
 
