@@ -4,8 +4,8 @@
 
 #define ADC_VOLTS 3.3
 #define ADC_MAX_BITS 4095
-#define F1K 0.6f
-#define F1B -31.2f
+#define F1K 0.0857f
+#define F1B -4.457f
 
 #define ADC_ExternalTrigConv_None   ((uint32_t)0x000E0000)
 

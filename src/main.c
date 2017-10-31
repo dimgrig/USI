@@ -36,8 +36,8 @@ void LEDsSet (unsigned int);
 #define Trc 0.001f
 #define K (SPS*Trc)
 
-static uint16_t Dacc = 0;
-static uint8_t Dout = 0;
+static uint32_t Dacc = 0;
+static uint32_t Dout = 0;
 
 
 uint16_t init_finished = 0;
@@ -226,7 +226,7 @@ void main(void)
 						SCREEN = SETTINGS;
 						dloffset = API_Screen_BasicScreen(phost, SCREEN);
 					break;
-					case LOGS:
+					case CALIBRATION:
 						SCREEN = SETTINGS;
 						dloffset = API_Screen_BasicScreen(phost, SCREEN);
 					break;
@@ -278,7 +278,7 @@ void main(void)
 					break;
 					case MATERIAL:
 					break;
-					case LOGS:
+					case CALIBRATION:
 					break;
 				}
 			break;
@@ -287,12 +287,12 @@ void main(void)
 					case MAIN:
 					break;
 					case SETTINGS:
-						SCREEN = LOGS;
+						SCREEN = CALIBRATION;
 						dloffset = API_Screen_BasicScreen(phost, SCREEN);
 					break;
 					case MATERIAL:
 					break;
-					case LOGS:
+					case CALIBRATION:
 					break;
 				}
 			break;

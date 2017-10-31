@@ -491,7 +491,7 @@ ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost,
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
 			Ft_App_WrCoCmd_Buffer(phost,TAG(5));          // assign the tag value
 			Ft_Gpu_CoCmd_FgColor(phost,(tag==5)?button_color_hover:button_color);
-			Ft_Gpu_CoCmd_Button(phost, 110, 60, 100, 40, 12, 0, "\x13\x12\x1c\x0c\x24\x0c\x1e\x14\x42"); //Измерения
+			Ft_Gpu_CoCmd_Button(phost, 110, 60, 100, 40, 12, 0, "\x17\x02\x1a\x14\x04\x24\x20\x06\x18\x02"); //Калибровка
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
 
 		break;
@@ -546,7 +546,7 @@ ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost,
 				Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
 			}
 		break;
-		case LOGS:
+		case CALIBRATION:
 			Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0xd8,0x00));
 
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
@@ -600,8 +600,8 @@ ft_uint16_t API_Screen_BasicScreen(Ft_Gpu_Hal_Context_t *phost, Screen_TypeDef S
 		case MATERIAL:
 			;//API_Screen_MaterialScreen(phost, SCREEN);
 		break;
-		case LOGS:
-			API_Screen_LogsScreen(phost);
+		case CALIBRATION:
+			;//API_Screen_LogsScreen(phost);
 		break;
 	}
 
@@ -640,36 +640,6 @@ void API_Screen_MainScreen(Ft_Gpu_Hal_Context_t *phost)
 	Ft_Gpu_CoCmd_Text(phost, 117, 147, 12, 0, "\x1d\x05\x60"); //HB=
 	Ft_Gpu_CoCmd_Text(phost, 227, 147, 12, 0, "\x64\x05\x60"); //SB=
 
-
-	Ft_App_WrCoCmd_Buffer(phost,gray);
-	Ft_App_WrCoCmd_Buffer(phost,BEGIN(LINES));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(0, 35, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(FT_Width, 35, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(110, 70, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(FT_Width, 70, 0, 0));
-
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(0, 105, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(FT_Width, 105, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(110, 140, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(FT_Width, 140, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(0, 175, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(FT_Width, 175, 0, 0));
-
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(110, 0, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(110, 175, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(220, 0, 0, 0));
-	Ft_App_WrCoCmd_Buffer(phost,VERTEX2II(220, 175, 0, 0));
-
-	Ft_App_WrCoCmd_Buffer(phost,END());
-
-}
-
-void API_Screen_LogsScreen(Ft_Gpu_Hal_Context_t *phost)
-{
-	Ft_App_WrCoCmd_Buffer(phost, white);
-	Ft_Gpu_CoCmd_Text(phost, 2, 7, 12, 0, "\x21\x20\x18\x02\x12\x02\x1e\x14\x42"); //Показания
-	Ft_Gpu_CoCmd_Text(phost, 117, 7,  12, 0, "\x01\x20\x60"); //Fk=
-	Ft_Gpu_CoCmd_Text(phost, 227, 7, 12, 0, "\x01\x18\x60"); //Ak=
 
 	Ft_App_WrCoCmd_Buffer(phost,gray);
 	Ft_App_WrCoCmd_Buffer(phost,BEGIN(LINES));
