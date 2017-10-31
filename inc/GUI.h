@@ -6,11 +6,13 @@
 
   typedef enum
   { 
-    IDLE = 0x00, /*!<  */
-    TOUCH   = 0x01, /*!< */
-    MEASURE  = 0x02, /*!<  */
-    REMOVAL  = 0x03,  /*!<  */
-	RESULTS  = 0x04  /*!<  */
+	ERROR_ = 0x30, /*!<  */
+    IDLE = 0x31, /*!<  */
+    TOUCH   = 0x32, /*!< */
+    MEASURE  = 0x33, /*!<  */
+    REMOVAL  = 0x34,  /*!<  */
+	RESULTS  = 0x35,  /*!<  */
+	RESET_  = 0x36  /*!<  */
   }State_TypeDef;
   
   typedef enum

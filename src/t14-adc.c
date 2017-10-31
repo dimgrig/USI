@@ -5,25 +5,31 @@ uint8_t initADC = 0;
          
 void ADC_init()
 {
+
+
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_GPIOC, ENABLE);
 
   GPIO_InitTypeDef GPIO_InitStructure;
 
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
+  //GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AN;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
   GPIO_Init(GPIOC, &GPIO_InitStructure);
 
   //GPIO_PinAFConfig(GPIOA, GPIO_PinSource4, GPIO_Mode_AIN);
         
-        
   RCC_HSICmd(ENABLE);
   /*!< Wait till HSI is ready */
   while (RCC_GetFlagStatus(RCC_FLAG_HSIRDY) == RESET)
   {}
-  RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI);       
+  RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI);
+
+  ADC_CommonInitTypeDef ADC_CommonInitStructure;
+  ADC_CommonInitStructure.ADC_Prescaler = ADC_Prescaler_Div1;
+  ADC_CommonInit(&ADC_CommonInitStructure);
         
-        
+
 //Инициализация ADC
   ADC_InitTypeDef ADC_InitStruct;
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_ADC1, ENABLE); //Включаем тактирование ADC
@@ -35,7 +41,7 @@ void ADC_init()
   ADC_InitStruct.ADC_ScanConvMode = ENABLE; //DISABLE;
   ADC_InitStruct.ADC_ExternalTrigConvEdge = ADC_ExternalTrigConvEdge_None;  
   ADC_InitStruct.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None;
-  ADC_InitStruct.ADC_NbrOfConversion = 10;
+  ADC_InitStruct.ADC_NbrOfConversion = 1;
   
   ADC_Init(ADC1, &ADC_InitStruct);  //Конифигурируем модуль ADC заданной структурой
   /*Далее делаем следующие настройки для регулярного канала: 
@@ -49,7 +55,8 @@ void ADC_init()
 ////  ADC1->CR2 |= ADC_CR2_CONT; //Режим непрерывного преобразования.
 //// ADC1->CR2 |= ADC_CR2_SWSTART;
   
-  ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_24Cycles);
+  ADC_RegularChannelConfig(ADC1, ADC_Channel_10, 1, ADC_SampleTime_384Cycles);
+  //ADC_RegularChannelConfig(ADC1, ADC_Channel_11, 1, ADC_SampleTime_384Cycles);
   ADC_DMARequestAfterLastTransferCmd(ADC1, ENABLE);
 
 //  ADC1->CR1;

@@ -26,10 +26,10 @@ void TIMERS_init(void)
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2,ENABLE);
   RCC_APB1PeriphResetCmd(RCC_APB1Periph_TIM2,DISABLE);
 
-  // Set timer period 0.1 sec
+  // Set timer period
   TIM_TimeBaseInitStruct.TIM_Prescaler = 320;  // 10us resolution
   TIM_TimeBaseInitStruct.TIM_CounterMode = TIM_CounterMode_Up;
-  TIM_TimeBaseInitStruct.TIM_Period = 50000;  // 500 ms
+  TIM_TimeBaseInitStruct.TIM_Period = 10000;  // 100 ms
   TIM_TimeBaseInitStruct.TIM_ClockDivision = TIM_CKD_DIV1;
   TIM_TimeBaseInit(TIM2,&TIM_TimeBaseInitStruct);
 

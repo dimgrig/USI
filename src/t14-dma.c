@@ -64,7 +64,7 @@ void DMA_init(void)
 
 	//==Configure DMA1 - Channel1==
 	DMA_DeInit(DMA1_Channel1); //Set DMA registers to default values
-	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&ADC1->DR; //Address of peripheral the DMA must map to
+	DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t) &ADC1->DR; //Address of peripheral the DMA must map to
 	DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t) & DMA_BUFFER[0]; //Variable to which ADC values will be stored
 	DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralSRC;
 	DMA_InitStructure.DMA_BufferSize = DMA_BUFFER_SIZE; //Buffer size (8 because we using 8 channels)
@@ -86,7 +86,7 @@ void DMA_init(void)
 	NVIC_Init(&NVIC_InitStructure);
 
 	DMA_ITConfig(DMA1_Channel1, DMA_IT_TC, ENABLE); //включаем прерывание по половине буфера
-	DMA_ITConfig(DMA1_Channel1, DMA_IT_HT, ENABLE); //включаем прерывание по окончанию буфера
+	//DMA_ITConfig(DMA1_Channel1, DMA_IT_HT, ENABLE); //включаем прерывание по окончанию буфера
 	DMA_Init(DMA1_Channel1, &DMA_InitStructure); //Initialise the DMA
 
 	DMA_Cmd(DMA1_Channel1, ENABLE);
