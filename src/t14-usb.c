@@ -78,6 +78,7 @@ void USB_Send_Packet(uint8_t *packet, uint16_t length)
 	USB_Send_Data( hextoascii((CRC_ >> 0)&0x0F) );
 
 	USB_Send_Data(0x03);
+	USB_Send_Data(0x0A);
 }
 
 void USB_Send_State(State_TypeDef STATE){

@@ -474,7 +474,7 @@ ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost,
 
 		break;
 		case SETTINGS:
-			tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
+			//tag = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
 
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
 			Ft_App_WrCoCmd_Buffer(phost,TAG(1));          // assign the tag value
@@ -554,6 +554,11 @@ ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost,
 			Ft_Gpu_CoCmd_FgColor(phost,(tag==1)?button_color_hover:button_color);
 			Ft_Gpu_CoCmd_Button(phost, 5, 190, 100, 40, 12, 0, "\x5f");
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+
+			Keyboard(phost, tag);
+//			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+//			Ft_Gpu_CoCmd_Keys(phost, 5, 200, 315, 20, 2, (OPT_CENTER | tag), "0123456789.<");
+//			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
 		break;
 	}
 
@@ -667,5 +672,108 @@ void API_Screen_MainScreen(Ft_Gpu_Hal_Context_t *phost)
 
 
 
+ft_void_t Keyboard(Ft_Gpu_Hal_Context_t *phost, ft_uint16_t tag)
+{
+//	ft_uint8_t TextFont = 12;
+//	ft_uint8_t ButtonW = 40;
+//	ft_uint8_t ButtonH = 40;
+//	ft_uint8_t yBtnDst = 5;
+//	ft_uint8_t CurrChar = '|';
+//	ft_uint8_t CurrTag = 0;
+//	ft_uint8_t PrevTag = 0;
+//	//ft_uint8_t Pendown = 1;
+//	ft_uint8_t CurrTextIdx = 0;
+	ft_uint16_t FT_DispWidth = 320;
+//	ft_uint8_t yOffset = 0;
+
+	/* Check the user input and then add the characters into array */
+	CurrTag = tag;
+//	Pendown = ((Ft_Gpu_Hal_Rd32(phost,REG_TOUCH_DIRECT_XY)>>31) & 0x01);
+	CurrChar = CurrTag;
+
+	if(CurrTag==249)
+	{
+		CurrTag=0;
+	}
+	if(0 == CurrTag)
+	{
+		CurrChar = '\x52';
+	}
+
+	/* check whether pendown has happened */
+	if( /*( 1 == Pendown) &&*/ (0 != PrevTag))
+	{
+		CurrTextIdx++;
+//		/* clear all the charaters after 24 are pressed */
+//		if(CurrTextIdx > 24)
+//		{
+//			CurrTextIdx = 0;
+//		}
+	}
+
+//	Ft_Gpu_CoCmd_Dlstart(phost);
+//	Ft_App_WrCoCmd_Buffer(phost,CLEAR_COLOR_RGB(64,64,64));
+//	Ft_App_WrCoCmd_Buffer(phost,CLEAR(1,1,1));
+//	Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0xff,0xff));
+
+	/* Draw text entered by user */
+	/* make sure the array is a string */
+	DispText[CurrTextIdx] = CurrChar;
+//	DispText[CurrTextIdx + 1] = '\0';
+	Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+	Ft_Gpu_CoCmd_Text(phost,FT_DispWidth/2, 40, 12, OPT_CENTER, DispText);//text info
+	Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
+//	yOffset = 80 + 10;
+	/* Construct a simple keyboard - note that the tags associated with the keys are the character values given in the arguments */
+	Ft_Gpu_CoCmd_FgColor(phost,0x404080);
+	Ft_Gpu_CoCmd_GradColor(phost,0x00ff00);
+
+// Ft_Gpu_CoCmd_Keys(phost, yBtnDst, yOffset, 10*ButtonW, ButtonH, TextFont,(OPT_CENTER | CurrTag), "qwertyuiop");
+// Ft_Gpu_CoCmd_GradColor(phost,0x00ffff);
+// yOffset += ButtonH + yBtnDst;
+// Ft_Gpu_CoCmd_Keys(phost, yBtnDst, yOffset, 10*ButtonW, ButtonH, TextFont,(OPT_CENTER | CurrTag), "asdfghjkl");
+// Ft_Gpu_CoCmd_GradColor(phost,0xffff00);
+// yOffset += ButtonH + yBtnDst;
+// Ft_Gpu_CoCmd_Keys(phost, yBtnDst, yOffset, 10*ButtonW, ButtonH, TextFont,(OPT_CENTER | CurrTag), "zxcvbnm");//hilight button z
+// yOffset += ButtonH + yBtnDst;
+// Ft_App_WrCoCmd_Buffer(phost,TAG(' '));
+//
+// if(' ' == CurrTag)
+// {
+//	 Ft_Gpu_CoCmd_Button(phost,yBtnDst, yOffset, 10*ButtonW, ButtonH, TextFont, OPT_CENTER | OPT_FLAT, " ");//mandatory to give '\0' at the end to make sure coprocessor understands the string end
+// }
+// else
+// {
+//	 Ft_Gpu_CoCmd_Button(phost,yBtnDst, yOffset, 10*ButtonW, ButtonH, TextFont, OPT_CENTER, " ");//mandatory to give '\0' at the end to make sure coprocessor understands the string end
+// }
+
+
+//	yOffset = 80 + 10;
+	Ft_Gpu_CoCmd_Keys(phost, 40, 80, 6*40, 40, 12, (0 | CurrTag), "\x53\x54\x55\x56\x57\x58");
+	Ft_Gpu_CoCmd_Keys(phost, 40, 140, 6*40, 40, 12, (0 | CurrTag), "\x59\x5a\x5b\x5c\x50\x51");
+//	yOffset += ButtonH + yBtnDst;
+//	Ft_Gpu_CoCmd_Keys(phost, 11*ButtonW, yOffset, 3*ButtonW, ButtonH, TextFont, (0 | CurrTag), "456");
+//	yOffset += ButtonH + yBtnDst;
+//	Ft_Gpu_CoCmd_Keys(phost, 11*ButtonW, yOffset, 3*ButtonW, ButtonH, TextFont, (0 | CurrTag), "123");
+//	yOffset += ButtonH + yBtnDst;
+//	Ft_App_WrCoCmd_Buffer(phost,COLOR_A(255));
+//	Ft_Gpu_CoCmd_Keys(phost, 11*ButtonW, yOffset, 3*ButtonW, ButtonH, TextFont, (0 | CurrTag), "0.");//hilight button 0
+	Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0x00,0x00));
+
+//	StringArray[0] = '\0';
+//	strcat(StringArray,"Next demo in ");
+//	Ft_Gpu_Hal_Dec2Ascii(StringArray,(ThisDemoEnd/100)+1);
+//	strcat(StringArray,"s");
+//	Ft_Gpu_CoCmd_Text(phost,FT_DispWidth, (FT_DispHeight-12), 20, OPT_RIGHTX,StringArray);
+//	if(tftConfig == RTP35 || tftConfig == RTP43 || tftConfig == CTP35 || tftConfig== CTP43)
+//	{
+//		Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0xff,0xff));
+//		Ft_App_WrCoCmd_Buffer(phost,TAG(249));
+//		Ft_Gpu_CoCmd_Button(phost,FT_DispWidth-65,FT_DispHeight-42,60,30,20,0, "SKIP->");
+//		CurrTag2 = Ft_Gpu_Hal_Rd8(phost,REG_TOUCH_TAG);
+//	}
+
+	PrevTag = CurrTag;
+}
 
 
