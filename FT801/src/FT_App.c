@@ -369,11 +369,11 @@ ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost,
 			//Ft_App_WrCoCmd_Buffer(phost,CLEAR(0xff,0xff,0xff));
 
 
-			Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0x00,0x00,0xff));
-			Ft_Gpu_CoCmd_Text(phost, 10, 50, 16, 0, "CONTENT");
+			//Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0x00,0x00,0xff));
+			//Ft_Gpu_CoCmd_Text(phost, 10, 50, 16, 0, "CONTENT");
 			Ft_App_WrCoCmd_Buffer(phost,COLOR_RGB(0xff,0xd8,0x00));
-			Ft_Gpu_CoCmd_Number(phost, 10, 60, 16, 0, nmb);
-			Ft_Gpu_CoCmd_Number(phost, 10, 70, 16, 0, STATE);
+			//Ft_Gpu_CoCmd_Number(phost, 10, 60, 16, 0, nmb);
+			//Ft_Gpu_CoCmd_Number(phost, 10, 70, 16, 0, STATE);
 
 			//Ft_Gpu_CoCmd_Text(phost, 117, 7,  12, 0, "\x65\x67\x60"); //Fk=
 			//Ft_Gpu_CoCmd_Text(phost, 227, 7, 12, 0, "\x63\x67\x60"); //Ak=
@@ -554,6 +554,8 @@ ft_void_t SAMAPP_API_Screen_Content(Ft_Gpu_Hal_Context_t *phost,
 			Ft_Gpu_CoCmd_FgColor(phost,(tag==1)?button_color_hover:button_color);
 			Ft_Gpu_CoCmd_Button(phost, 5, 190, 100, 40, 12, 0, "\x5f");
 			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(0));
+
+
 
 			Keyboard(phost, tag);
 //			Ft_App_WrCoCmd_Buffer(phost,TAG_MASK(1));
